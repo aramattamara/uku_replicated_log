@@ -1,18 +1,25 @@
-version: '1'
 services:
   master:
-    build: ./master
+    build:
+      dockerfile: dockerfile_master
+      context: .
     ports:
       - "3000:3000"
     depends_on:
-      secondary1, secondary2:
-        condition: service_started
+      secondary1:
+        condition: service_healthy
+      secondary2:
+        condition: service_healthy
 
   secondary1:
-    build: ./secondary
+    build:
+      dockerfile: dockerfile_secondary
+      context: .
     ports:
       - "3001:3001"
   secondary2:
-    build: ./secondary
+    build:
+      dockerfile: dockerfile_secondary
+      context: .
     ports:
       - "3002:3002"
