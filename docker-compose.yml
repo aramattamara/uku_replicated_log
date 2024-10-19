@@ -1,0 +1,18 @@
+version: '1'
+services:
+  master:
+    build: ./master
+    ports:
+      - "3000:3000"
+    depends_on:
+      secondary1, secondary2:
+        condition: service_started
+
+  secondary1:
+    build: ./secondary
+    ports:
+      - "3001:3001"
+  secondary2:
+    build: ./secondary
+    ports:
+      - "3002:3002"
