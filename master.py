@@ -1,28 +1,23 @@
 import sys
 import logging
-
-import requests
 from http import server
 from http.server import ThreadingHTTPServer
 
 from replicator import Replicator
+logging.basicConfig(level='INFO')
 
 ADDR = '0.0.0.0'
 
 MASTER_LOG = []
 
-# Configure logging
 logger = logging.getLogger('master')
 
-
-requests.get('secondary2:8000')
-
-secondaries33 = [
-    "http://secondary1:3001",
-    "http://secondary2:3002",
+secondaries = [
+    "http://secondary1:8000",
+    "http://secondary2:8000",
 ]
 
-replicator = Replicator(secondaries33)
+replicator = Replicator(secondaries)
 
 
 class MyHandler(server.SimpleHTTPRequestHandler):
@@ -40,6 +35,10 @@ class MyHandler(server.SimpleHTTPRequestHandler):
         MASTER_LOG.append(message)
 
         print(f"Added {self.path}, current log {MASTER_LOG}")
+
+        self.send_response(200)
+        self.send_header('Content-type', 'text/plain')
+        self.end_headers()
 
         self.wfile.write(f"Added {self.path}\n".encode())
 

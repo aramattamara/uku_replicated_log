@@ -5,6 +5,7 @@ TIMEOUT_S = 1.0
 
 logger = logging.getLogger('replicator')
 
+
 class Replicator:
     def __init__(self, secondaries: list[str]):
         self.secondaries = secondaries

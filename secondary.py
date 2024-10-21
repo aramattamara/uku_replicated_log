@@ -1,11 +1,11 @@
-
 import sys
+import logging
 from http import server
 from http.server import ThreadingHTTPServer
 
 ADDR = '0.0.0.0'
-L = []
-
+SECONDARY_LOG = []
+logger = logging.getLogger('secondary')
 
 class MyHandler(server.SimpleHTTPRequestHandler):
     def do_GET(self):
@@ -13,14 +13,21 @@ class MyHandler(server.SimpleHTTPRequestHandler):
         self.send_header('Content-type', 'text/plain')
         self.end_headers()
 
-        response = str(L)
+        response = str(SECONDARY_LOG)
 
         self.wfile.write(f"{response}\n".encode())
 
     def do_POST(self):
-        L.append(self.path)
+        #message = self.path
+        message = self.rfile.read(9999999)
+        SECONDARY_LOG.append(message)
 
-        print(f"Added {self.path}, current {L}")
+
+        self.send_response(200)
+        self.send_header('Content-type', 'text/plain')
+        self.end_headers()
+
+        print(f"Added {self.path}, current {SECONDARY_LOG}")
         self.wfile.write(f"Added {self.path}\n".encode())
 
 
