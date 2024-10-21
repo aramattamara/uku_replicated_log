@@ -1,16 +1,13 @@
 import logging
-
 from flask import Flask, request, jsonify
-
 from replicator import Replicator
-
-logging.basicConfig(level='INFO')
 
 ADDR = '0.0.0.0'
 
-MASTER_LOG = []
-
+logging.basicConfig(level='INFO')
 logger = logging.getLogger('master')
+app = Flask(__name__)
+
 
 secondaries = [
      "http://secondary1:8000",
@@ -19,9 +16,7 @@ secondaries = [
 
 replicator = Replicator(secondaries)
 
-app = Flask(__name__)
-
-
+MASTER_LOG = []
 @app.route('/', methods=['GET'])
 def get():
     return jsonify(MASTER_LOG)
@@ -31,11 +26,11 @@ def get():
 def post(message: str):
     MASTER_LOG.append(message)
 
-    print(f"Added '{message}', current log {MASTER_LOG}, sending to replicas")
+    logger.info(f"Added '{message}', current log {MASTER_LOG}, sending to replicas")
 
     replicator.replicate_message(message)
 
-    return f"Added {message}"
+    return jsonify(f"Added {message}")
 
 
 def main(port: int):

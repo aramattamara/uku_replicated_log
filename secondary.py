@@ -2,6 +2,8 @@ import logging
 from flask import Flask, request, jsonify
 
 ADDR = '0.0.0.0'
+
+logging.basicConfig(level='INFO')
 logger = logging.getLogger('secondary')
 app = Flask(__name__)
 
@@ -14,13 +16,13 @@ def get():
 @app.route('/', methods=['POST'])
 def post():
     message = request.data.decode('utf-8')
-    print(f"Received {message}")
+    logger.info(f"Received {message}")
 
     SECONDARY_LOG.append(message)
 
-    print(f"Current {SECONDARY_LOG}")
+    logger.info(f"Current {SECONDARY_LOG}")
 
-    return f"Added {message}"
+    return jsonify(f"Added {message}")
 
 
 def main(port: int):
