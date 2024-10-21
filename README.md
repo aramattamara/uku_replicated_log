@@ -6,7 +6,7 @@
 ### Start:
 ```bash
 # Run pre-build cluster 
-docker compose up
+docker compose build && docker compose up
 ```
 `docker-compose.yml` by default is configured to run single instance of `master` at `3000` port node and 2 instances of `secondary` nodes at ports `3001` and `3002`.
 
