@@ -13,7 +13,11 @@ class Replicator:
     def replicate_message(self, message: str):
 
         for secondary in self.secondaries:
-            response = requests.post(secondary, data={'message': message}, timeout=TIMEOUT_S)
+            try:
+                response = requests.post(secondary, data=message, timeout=TIMEOUT_S)
+            except requests.exceptions.ReadTimeout as e:
+                logger.warning(f'Secondary {secondary} timed out for message {message}')
+                continue
 
             if response.status_code == 200:
                 logger.info(f"Replicated to {secondary}, response: {response.content}")

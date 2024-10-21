@@ -1,50 +1,36 @@
-import sys
 import logging
-from http import server
-from http.server import ThreadingHTTPServer
+from flask import Flask, request, jsonify
 
 ADDR = '0.0.0.0'
-SECONDARY_LOG = []
 logger = logging.getLogger('secondary')
+app = Flask(__name__)
 
-class MyHandler(server.SimpleHTTPRequestHandler):
-    def do_GET(self):
-        self.send_response(200)
-        self.send_header('Content-type', 'text/plain')
-        self.end_headers()
+SECONDARY_LOG = []
 
-        response = str(SECONDARY_LOG)
+@app.route('/', methods=['GET'])
+def get():
+    return jsonify(SECONDARY_LOG)
 
-        self.wfile.write(f"{response}\n".encode())
+@app.route('/', methods=['POST'])
+def post():
+    message = request.data.decode('utf-8')
+    print(f"Received {message}")
 
-    def do_POST(self):
-        #message = self.path
-        message = self.rfile.read(9999999)
-        SECONDARY_LOG.append(message)
+    SECONDARY_LOG.append(message)
 
+    print(f"Current {SECONDARY_LOG}")
 
-        self.send_response(200)
-        self.send_header('Content-type', 'text/plain')
-        self.end_headers()
-
-        print(f"Added {self.path}, current {SECONDARY_LOG}")
-        self.wfile.write(f"Added {self.path}\n".encode())
+    return f"Added {message}"
 
 
 def main(port: int):
-    with ThreadingHTTPServer((ADDR, port), MyHandler) as httpd:
-
-        print(f"Serving HTTP on {ADDR} port {port} ")
-
-        try:
-            httpd.serve_forever()
-        except KeyboardInterrupt:
-            print("\nKeyboard interrupt received, exiting.")
-            sys.exit(0)
+    logger.info(f"Starting Flask server on {ADDR} port {port}...")
+    app.run(host=ADDR, port=port)
 
 
 if __name__ == '__main__':
     import argparse
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--port', type=int, help='bind to this port')
     args = parser.parse_args()

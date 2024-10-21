@@ -1,9 +1,9 @@
-import sys
 import logging
-from http import server
-from http.server import ThreadingHTTPServer
+
+from flask import Flask, request, jsonify
 
 from replicator import Replicator
+
 logging.basicConfig(level='INFO')
 
 ADDR = '0.0.0.0'
@@ -13,86 +13,41 @@ MASTER_LOG = []
 logger = logging.getLogger('master')
 
 secondaries = [
-    "http://secondary1:8000",
-    "http://secondary2:8000",
+     "http://secondary1:8000",
+     "http://secondary2:8000",
 ]
 
 replicator = Replicator(secondaries)
 
+app = Flask(__name__)
 
-class MyHandler(server.SimpleHTTPRequestHandler):
-    def do_GET(self):
-        self.send_response(200)
-        self.send_header('Content-type', 'text/plain')
-        self.end_headers()
 
-        response = str(MASTER_LOG)
-        self.wfile.write(f"{response}\n".encode())
+@app.route('/', methods=['GET'])
+def get():
+    return jsonify(MASTER_LOG)
 
-    def do_POST(self):
-        message = self.path
 
-        MASTER_LOG.append(message)
+@app.route('/<message>', methods=['POST'])
+def post(message: str):
+    MASTER_LOG.append(message)
 
-        print(f"Added {self.path}, current log {MASTER_LOG}")
+    print(f"Added '{message}', current log {MASTER_LOG}, sending to replicas")
 
-        self.send_response(200)
-        self.send_header('Content-type', 'text/plain')
-        self.end_headers()
+    replicator.replicate_message(message)
 
-        self.wfile.write(f"Added {self.path}\n".encode())
-
-        replicator.replicate_message(message)
+    return f"Added {message}"
 
 
 def main(port: int):
-    with ThreadingHTTPServer((ADDR, port), MyHandler) as httpd:
-
-        print(f"Serving HTTP on {ADDR} port {port} ")
-
-        try:
-            httpd.serve_forever()
-        except KeyboardInterrupt:
-            print("\nKeyboard interrupt received, exiting.")
-            sys.exit(0)
+    logger.info(f"Starting Flask server on {ADDR} port {port}...")
+    app.run(host=ADDR, port=port)
 
 
 if __name__ == '__main__':
     import argparse
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--port', type=int, help='bind to this port')
     args = parser.parse_args()
 
     main(args.port)
-
-
-
-
-
-
-
-
-
-
-
-@app.route('/log', methods=['POST'])
-def append_log():
-    message = request.json.get('message')
-    if not message:
-        return "No message", 400
-
-    master_log.append(message)
-
-
-    # for secondary in secondaries:
-    #     try:
-    #         res = request.post(f"{secondary}/log", json={'message':message})
-    #         if response.status_code != 200:
-    #             return f"Failed ti replicate to {secondary}", 500
-
-
-
-
-if __name__ == '__main__':
-    logger.info("Starting Master server...")
-    app.run(port=5000)
