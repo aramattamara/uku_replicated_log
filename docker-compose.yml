@@ -15,11 +15,11 @@ services:
     build:
       dockerfile: dockerfile_secondary
       context: .
-    ports:
-      - "3001:8000"
+#    ports:
+#      - "3001:8000"
   secondary2:
     build:
       dockerfile: dockerfile_secondary
       context: .
-    ports:
-      - "3002:8000"
+#    ports:
+#      - "3002:8000"
