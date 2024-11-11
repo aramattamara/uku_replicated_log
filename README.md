@@ -12,5 +12,5 @@ docker compose build && docker compose up
 
 ### Usage:
 ```bash
-❯ curl -X POST 127.0.0.1:3000/message
+curl -X POST 127.0.0.1:3000/message
 ```

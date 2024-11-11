@@ -1,6 +1,6 @@
 import logging
-from flask import Flask, request, jsonify
-from replicator import Replicator
+from flask import Flask, jsonify
+from replicator import Replicator, Status
 
 ADDR = '0.0.0.0'
 
@@ -13,10 +13,20 @@ secondaries = [
      "http://secondary1:8000",
      "http://secondary2:8000",
 ]
+#DEBUG
+# secondaries = [
+#     "http://localhost:3001",
+#     "http://localhost:3002",
+# ]
+
+total_nodes = 1 + len(secondaries)
+logger.warning('Even number of total nodes')
 
 replicator = Replicator(secondaries)
 
 MASTER_LOG = []
+
+
 @app.route('/', methods=['GET'])
 def get():
     return jsonify(MASTER_LOG)
@@ -28,13 +38,21 @@ def post(message: str):
 
     logger.info(f"Added '{message}', current log {MASTER_LOG}, sending to replicas")
 
-    replicator.replicate_message(message)
+    results: list[Status] = replicator.replicate_message(message)
 
-    return jsonify(f"Added {message}")
+    # 1 for master + replicas
+    total_successes = 1 + results.count(Status.SUCCESS)
+
+    if total_successes > total_nodes // 2:
+        print('Quorum reached')
+    else:
+        print('No quorum')
+
+    return jsonify(f"Sent {message}: {str(results)}")
 
 
 def main(port: int):
-    logger.info(f"Starting Flask server on {ADDR} port {port}...")
+    logger.info(f"Starting master on {ADDR} port {port}...")
     app.run(host=ADDR, port=port)
 
 

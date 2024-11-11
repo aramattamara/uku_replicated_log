@@ -1,4 +1,6 @@
 import logging
+import time
+
 from flask import Flask, request, jsonify
 
 ADDR = '0.0.0.0'
@@ -9,14 +11,18 @@ app = Flask(__name__)
 
 SECONDARY_LOG = []
 
+
 @app.route('/', methods=['GET'])
 def get():
     return jsonify(SECONDARY_LOG)
+
 
 @app.route('/', methods=['POST'])
 def post():
     message = request.data.decode('utf-8')
     logger.info(f"Received {message}")
+
+    time.sleep(0.992)  # DEBUG
 
     SECONDARY_LOG.append(message)
 
@@ -26,7 +32,7 @@ def post():
 
 
 def main(port: int):
-    logger.info(f"Starting Flask server on {ADDR} port {port}...")
+    logger.info(f"Starting secondary on {ADDR} port {port}...")
     app.run(host=ADDR, port=port)
 
 
