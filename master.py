@@ -8,16 +8,10 @@ logging.basicConfig(level='INFO')
 logger = logging.getLogger('master')
 app = Flask(__name__)
 
-
 secondaries = [
-     "http://secondary1:8000",
-     "http://secondary2:8000",
+    "http://secondary1:8000",
+    "http://secondary2:8000",
 ]
-#DEBUG
-# secondaries = [
-#     "http://localhost:3001",
-#     "http://localhost:3002",
-# ]
 
 total_nodes = 1 + len(secondaries)
 logger.warning('Even number of total nodes')
@@ -51,7 +45,13 @@ def post(message: str):
     return jsonify(f"Sent {message}: {str(results)}")
 
 
-def main(port: int):
+def main(port: int, localhost:bool):
+    if localhost:
+        secondaries.clear()
+        secondaries.extend([
+            "http://localhost:3001",
+            "http://localhost:3002",
+        ])
     logger.info(f"Starting master on {ADDR} port {port}...")
     app.run(host=ADDR, port=port)
 
@@ -61,6 +61,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--port', type=int, help='bind to this port')
+    parser.add_argument('--localhost', action='store_true', help='connect to the localhost when true')
     args = parser.parse_args()
 
-    main(args.port)
+    main(args.port, args.localhost)
