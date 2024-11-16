@@ -27,23 +27,23 @@ class Replicator:
         self.secondaries = secondaries
         self.pool = ThreadPoolExecutor(max_workers=THREADS)
 
-    def replicate_message(self, message: str) -> list[Status]:
+    def replicate_message(self, full_message: dict[str, str | float]) -> list[Status]:
         results: Iterator[Status] = self.pool.map(
-            self.send_message(message),
+            self.send_message(full_message),
             self.secondaries,
             timeout=TIMEOUT_S + 1.0
         )
         return list(results)
 
-    def send_message(self, message: str) -> Callable[[str], Status]:
+    def send_message(self, full_message: dict[str, str | float]) -> Callable[[str], Status]:
         def send(secondary: str) -> Status:
             try:
-                response: Response = requests.post(secondary, data=message, timeout=TIMEOUT_S)
+                response: Response = requests.post(secondary, data=full_message, timeout=TIMEOUT_S)
             except requests.exceptions.ReadTimeout as e:
-                logger.warning(f'Secondary {secondary} timed out for message {message}: {e}')
+                logger.warning(f'Secondary {secondary} timed out for message {full_message}: {e}')
                 return Status.TIMEOUT
             except IOError as e:
-                logger.warning(f'Error sending {message} to {secondary}: {e}')
+                logger.warning(f'Error sending {full_message} to {secondary}: {e}')
                 return Status.ERROR
 
             if response.status_code == 200:
