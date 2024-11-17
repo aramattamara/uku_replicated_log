@@ -33,7 +33,7 @@ def get():
 @app.route('/<message>', methods=['POST'])
 def post(message: str):
 
-    write_concern: str | None = request.args.get('concern')
+    write_concern: int = int(request.args.get('concern'))
 
     message_id = str(uuid4())
     timestamp = time.time()

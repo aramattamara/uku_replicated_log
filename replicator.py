@@ -41,6 +41,10 @@ class Replicator:
             ff.append(f)
 
         successful = 1  # Master itself counts as 1 ACK
+
+        if full_message["concern"] == 1:
+            return True
+
         f: Future[Status]
         for f in as_completed(ff):
             result = f.result(timeout=TIMEOUT_S + 1.0)
