@@ -12,7 +12,7 @@ docker compose build && docker compose up
 
 ### Usage:
 ```bash
-curl -X POST 127.0.0.1:3000/message
+curl -X POST 127.0.0.1:3000/message?concern=1
 ```
 <img width="695" alt="Screenshot 2024-11-15 at 8 14 39 PM" src="https://github.com/user-attachments/assets/56bc87d1-a493-410c-852d-ae4eb912c96f">
 

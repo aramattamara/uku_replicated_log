@@ -1,7 +1,7 @@
 import logging
 import time
 
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from replicator import Replicator, Status
 from uuid import uuid4
 
@@ -32,25 +32,25 @@ def get():
 
 @app.route('/<message>', methods=['POST'])
 def post(message: str):
+
+    write_concern: str | None = request.args.get('concern')
+
     message_id = str(uuid4())
     timestamp = time.time()
-    full_message = {"id": message_id, "content": message, "timestamp": timestamp}
+    full_message = {"id": message_id, "content": message, "timestamp": timestamp, "concern": write_concern}
 
     MASTER_LOG.append(full_message)
 
     logger.info(f"Added '{full_message}', current log {MASTER_LOG}, sending to replicas")
 
-    results: list[Status] = replicator.replicate_message(full_message)
+    quorum_reached: bool = replicator.replicate_message(full_message)
 
-    # 1 for master + replicas
-    total_successes = 1 + results.count(Status.SUCCESS)
-
-    if total_successes > total_nodes // 2:
+    if quorum_reached:
         print('Quorum reached')
     else:
         print('No quorum')
 
-    return jsonify(f"Sent {full_message}: {str(results)}")
+    return jsonify(f"Sent {full_message}: {str(quorum_reached)}")
 
 
 def main(port: int, localhost:bool):
