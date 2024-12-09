@@ -25,6 +25,12 @@ replicator = Replicator(secondaries)
 MASTER_LOG = []
 
 
+class Message:
+    def __init__(self, content, timestamp, write_concern):
+        self.content = content
+        self.timestamp = timestamp
+        self.write_concern = write_concern
+
 @app.route('/', methods=['GET'])
 def get():
     return jsonify(MASTER_LOG)
@@ -34,10 +40,9 @@ def get():
 def post(message: str):
 
     write_concern: int = int(request.args.get('concern'))
-
-    message_id = str(uuid4())
     timestamp = time.time()
-    full_message = {"id": message_id, "content": message, "timestamp": timestamp, "concern": write_concern}
+
+    full_message = Message(message, timestamp, write_concern)
 
     MASTER_LOG.append(full_message)
 

@@ -5,6 +5,8 @@ from enum import Enum
 import requests
 from requests import Response
 
+from master import Message
+
 TIMEOUT_S = 1.0
 THREADS = 16
 
@@ -26,7 +28,7 @@ class Replicator:
         self.secondaries = secondaries
         self.pool = ThreadPoolExecutor(max_workers=THREADS)
 
-    def replicate_message(self, full_message: dict[str, str | float]) -> bool:
+    def replicate_message(self, full_message: Message) -> bool:
 
         ff: list[Future[Status]] = []
 
@@ -42,7 +44,7 @@ class Replicator:
 
         successful = 1  # Master itself counts as 1 ACK
 
-        if full_message["concern"] == 1:
+        if full_message.write_concern == 1:
             return True
 
         f: Future[Status]
@@ -52,7 +54,7 @@ class Replicator:
             if result == Status.SUCCESS:
                 successful += 1
 
-            if successful >= full_message["concern"]:
+            if successful >= full_message.write_concern:
                 return True
         return False
 
