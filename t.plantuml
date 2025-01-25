@@ -1,4 +1,6 @@
 @startuml
+user -> master
+
 activate master
 master -> secondary1: msg
 master -> secondary2: msg
@@ -10,6 +12,7 @@ master <- secondary3 : 200
 master <- secondary1 : 200
 master <- secondary2 : 200
 
+user  <- master
 deactivate master
 
 @enduml
