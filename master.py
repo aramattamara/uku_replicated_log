@@ -2,9 +2,9 @@ import logging
 import time
 
 from flask import Flask, jsonify, request
-from replicator import Replicator, Status
-from uuid import uuid4
 
+from message import Message
+from replicator import Replicator
 
 ADDR = '0.0.0.0'
 
@@ -25,12 +25,6 @@ replicator = Replicator(secondaries)
 MASTER_LOG = []
 
 
-class Message:
-    def __init__(self, content, timestamp, write_concern):
-        self.content = content
-        self.timestamp = timestamp
-        self.write_concern = write_concern
-
 @app.route('/', methods=['GET'])
 def get():
     return jsonify(MASTER_LOG)
@@ -39,7 +33,12 @@ def get():
 @app.route('/<message>', methods=['POST'])
 def post(message: str):
 
-    write_concern: int = int(request.args.get('concern'))
+    concern_str: str | None = request.args.get('concern')
+    if concern_str is None:
+        write_concern = len(secondaries)
+    else:
+        write_concern: int = int(concern_str)
+
     timestamp = time.time()
 
     full_message = Message(message, timestamp, write_concern)
@@ -55,10 +54,10 @@ def post(message: str):
     else:
         print('No quorum')
 
-    return jsonify(f"Sent {full_message}: {str(quorum_reached)}")
+    return jsonify(f"Sent {full_message.content}: {str(quorum_reached)}")
 
 
-def main(port: int, localhost:bool):
+def main(port: int, localhost: bool):
     if localhost:
         secondaries.clear()
         secondaries.extend([

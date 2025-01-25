@@ -7,16 +7,13 @@ master -> secondary2: msg
 master -> secondary3: msg
 
 'as_completed
-
-master <- secondary3 : 200
-master <- secondary1 : 200
+master <- secondary3 : ACK
+master <- secondary1 : ACK
 
 '2 responses received, concern=2, returning
 user  <- master
 deactivate master
 
-master <- secondary2 : 200 (lost)
-
-
+master <- secondary2 : ACK (lost)
 @enduml
 

@@ -5,7 +5,7 @@ from enum import Enum
 import requests
 from requests import Response
 
-from master import Message
+from message import Message
 
 TIMEOUT_S = 1.0
 THREADS = 16
@@ -58,10 +58,10 @@ class Replicator:
                 return True
         return False
 
-
-    def send_message(self, full_message: dict[str, str | float], secondary: str) -> Status:
+    def send_message(self, full_message: Message, secondary: str) -> Status:
         try:
-            response: Response = requests.post(secondary, data=full_message, timeout=TIMEOUT_S)
+            msg: str = full_message.content
+            response: Response = requests.post(secondary, data=msg, timeout=TIMEOUT_S)
         except requests.exceptions.ReadTimeout as e:
             logger.warning(f'Secondary {secondary} timed out for message {full_message}: {e}')
             return Status.TIMEOUT

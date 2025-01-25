@@ -22,7 +22,7 @@ def post():
     message = request.data.decode('utf-8')
     logger.info(f"Received {message}")
 
-    time.sleep(0.992)  # DEBUG
+    time.sleep(0.994)  # DEBUG
 
     SECONDARY_LOG.append(message)
 
