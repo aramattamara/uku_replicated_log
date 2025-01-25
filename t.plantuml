@@ -1,0 +1,14 @@
+@startuml
+
+master -> secondary1: msg
+master <- secondary1
+
+
+master -> secondary2: msg
+master <- secondary2
+
+master -> secondary3: msg
+master <- secondary3
+
+@enduml
+
