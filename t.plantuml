@@ -1,5 +1,5 @@
 @startuml
-user -> master
+user -> master: msg, concern=2
 
 activate master
 master -> secondary1: msg
@@ -10,10 +10,13 @@ master -> secondary3: msg
 
 master <- secondary3 : 200
 master <- secondary1 : 200
-master <- secondary2 : 200
 
+'2 responses received, concern=2, returning
 user  <- master
 deactivate master
+
+master <- secondary2 : 200 (lost)
+
 
 @enduml
 
